@@ -217,5 +217,6 @@ int main()
     printf("%12s %s\n", "AVX512VL:", sup.AVX512VL ? "Yes" : "No");
     printf("%12s %s\n", "AVX512VNNI:", sup.AVX512VNNI ? "Yes" : "No");
 
+    getchar();
     return 0;
 }
