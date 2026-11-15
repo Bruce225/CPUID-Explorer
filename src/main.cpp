@@ -1,8 +1,9 @@
-﻿// MSVC x86 / x86-64 only
+﻿// Windows, MSVC x86 / x86-64 only
 #include <stdio.h>
 #include <intrin.h>
 #include <string.h>
 #include <stdint.h>
+#include <windows.h>
 
 int main()
 {
@@ -41,6 +42,26 @@ int main()
     }
     cpuBrand[48] = '\0';
     printf("CPU Brand: %s\n", cpuBrand);
+
+    // Get CPU Cores & Threads (Suitable for Non-hybrid architecture CPUs)
+    __cpuidex(cpuInfo, 0x0B, 0);
+    int numDfLogiProcPerCore = cpuInfo[1] & 0xFFFF;
+    __cpuidex(cpuInfo, 0x0B, 1);
+    int numDfLogiCores = cpuInfo[1] & 0xFFFF;
+
+    int activeThreads = GetActiveProcessorCount(ALL_PROCESSOR_GROUPS);
+
+    unsigned char buffer[4097];
+    DWORD size = sizeof(buffer);
+    GetLogicalProcessorInformationEx(
+        RelationProcessorCore, (PSYSTEM_LOGICAL_PROCESSOR_INFORMATION_EX)buffer, &size);
+    int isSMTActive =
+        ((((PSYSTEM_LOGICAL_PROCESSOR_INFORMATION_EX)buffer)->Processor.Flags) & LTP_PC_SMT) != 0;
+
+    printf("Hyper-Threading: %sSupported, currently %s\n", (numDfLogiProcPerCore > 1) ? "" : "Not ",
+        isSMTActive ? "ON" : "OFF");
+    printf("Active: %d / %d Cores, %d / %d Threads\n", activeThreads / (isSMTActive + 1),
+        numDfLogiCores / numDfLogiProcPerCore, activeThreads ,numDfLogiCores);
 
     // Get CPU Family / Model / Stepping etc.
     // 
@@ -217,6 +238,6 @@ int main()
     printf("%12s %s\n", "AVX512VL:", sup.AVX512VL ? "Yes" : "No");
     printf("%12s %s\n", "AVX512VNNI:", sup.AVX512VNNI ? "Yes" : "No");
 
-    getchar();
+    system("pause");
     return 0;
 }
