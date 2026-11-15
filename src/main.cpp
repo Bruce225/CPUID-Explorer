@@ -2,11 +2,12 @@
 #include <stdio.h>
 #include <intrin.h>
 #include <string.h>
+#include <stdint.h>
 
 int main()
 {
 // Get Basic Info
-    printf("__Basic Info__:\n");
+    printf("__ Basic Info __:\n");
 
     int cpuInfo[4] = {0};
     __cpuid(cpuInfo, 0);
@@ -50,7 +51,7 @@ int main()
     __cpuid(cpuInfo, 0x01);
     // printf("%x %x %x %x\n", cpuInfo[0], cpuInfo[1], cpuInfo[2], cpuInfo[3]);
 
-    int eax01 = cpuInfo[0];
+    int eax01 = cpuInfo[0], ecx01 = cpuInfo[2], edx01 = cpuInfo[3];
     int stepping = eax01 & 0xF, model = (eax01 >> 4) & 0xF, family = (eax01 >> 8) & 0xF;
     int procType = (eax01 >> 12) & 0x3;
     int extModel = (eax01 >> 16) & 0xF, extFamily = (eax01 >> 20) & 0xFF;
@@ -65,7 +66,7 @@ int main()
     printf("Extended Family: %x  Extended Model: %x\n", displayFamily, displayModel);
     
 // Get Cache
-    printf("\n__Cache__:\n");
+    printf("\n__ Cache __:\n");
 
     for (int i = 0; i <= 31; i++) 
     {
@@ -103,7 +104,118 @@ int main()
 
 
 // Get Instruction Sets Supported
+    printf("__ Supported Instruction Sets__\n");
 
+    __cpuidex(cpuInfo, 0x07, 0);
+    int ebx07_0 = cpuInfo[1], ecx07_0 = cpuInfo[2], edx07_0 = cpuInfo[3];
+    __cpuidex(cpuInfo, 0x07, 1);
+    int eax07_1 = cpuInfo[0];
+
+    typedef struct
+    {
+        uint32_t EM64T      : 1;
+        uint32_t VMX        : 1;
+        uint32_t TSX        : 1;
+        uint32_t SGX        : 1;
+
+        uint32_t MMX        : 1;
+        uint32_t SSE        : 1;
+        uint32_t SSE2       : 1;
+        uint32_t SSE3       : 1;
+        uint32_t SSSE3      : 1;
+        uint32_t SSE4_1     : 1;
+        uint32_t SSE4_2     : 1;
+
+        uint32_t AVX        : 1;
+        uint32_t AVX2       : 1;
+        uint32_t FMA3       : 1;
+        uint32_t F16C       : 1;
+        uint32_t BMI1       : 1;
+        uint32_t BMI2       : 1;
+        uint32_t POPCNT     : 1;
+        uint32_t MOVBE      : 1;
+        uint32_t ADX        : 1;
+        uint32_t AES_NI     : 1;
+        uint32_t PCLMULQDQ  : 1;
+        uint32_t SHA        : 1;
+        uint32_t RDRAND     : 1;
+
+        uint32_t AVXVNNI    : 1;
+        uint32_t AMX        : 1;
+        
+        uint32_t AVX512F    : 1;
+        uint32_t AVX512DQ   : 1;
+        uint32_t AVX512CD   : 1;
+        uint32_t AVX512BW   : 1;
+        uint32_t AVX512VL   : 1;
+        uint32_t AVX512VNNI : 1;
+    } cpuInsSets;
+
+    cpuInsSets sup = {0};
+
+    sup.MMX         = (edx01 >> 23) & 0x1;
+    sup.SSE         = (edx01 >> 25) & 0x1;
+    sup.SSE2        = (edx01 >> 26) & 0x1;
+    sup.SSE3        = ecx01 & 0x1;
+    sup.SSSE3       = (ecx01 >> 9) & 0x1;
+    sup.SSE4_1      = (ecx01 >> 19) & 0x1;
+    sup.SSE4_2      = (ecx01 >> 20) & 0x1;
+
+    sup.AVX         = (ecx01 >> 28) & 0x1;
+    sup.AVX2        = (ebx07_0 >> 5) & 0x1;
+    sup.FMA3        = (ecx01 >> 12) & 0x1;
+    sup.F16C        = (ecx01 >> 29) & 0x1;
+    sup.BMI1        = (ebx07_0 >> 3) & 0x1;
+    sup.BMI2        = (ebx07_0 >> 8) & 0x1;
+    sup.POPCNT      = (ecx01 >> 23) & 0x1;
+    sup.MOVBE       = (ecx01 >> 22) & 0x1;
+    sup.ADX         = (ebx07_0 >> 19) & 0x1;
+    sup.AES_NI      = (ecx01 >> 25) & 0x1;
+    sup.PCLMULQDQ   = (ecx01 >> 1) & 0x1;
+    sup.SHA         = (ebx07_0 >> 29) & 0x1;
+    sup.RDRAND      = (ecx01 >> 30) & 0x1;
+
+    sup.AVXVNNI     = (eax07_1 >> 4) & 0x1;
+    sup.AMX         = (edx07_0 >> 22) & 0x1;
+    
+    sup.AVX512F     = (ebx07_0 >> 16) & 0x1;
+    sup.AVX512DQ    = (ebx07_0 >> 17) & 0x1;
+    sup.AVX512CD    = (ebx07_0 >> 28) & 0x1;
+    sup.AVX512BW    = (ebx07_0 >> 30) & 0x1;
+    sup.AVX512VL    = (ebx07_0 >> 31) & 0x1;
+    sup.AVX512VNNI  = (ecx07_0 >> 11) & 0x1;
+
+    printf("%12s %s\n", "MMX:", sup.MMX ? "Yes" : "No");
+    printf("%12s %s\n", "SSE:", sup.SSE ? "Yes" : "No");
+    printf("%12s %s\n", "SSE2:", sup.SSE2 ? "Yes" : "No");
+    printf("%12s %s\n", "SSE3:", sup.SSE3 ? "Yes" : "No");
+    printf("%12s %s\n", "SSSE3:", sup.SSSE3 ? "Yes" : "No");
+    printf("%12s %s\n", "SSE4.1:", sup.SSE4_1 ? "Yes" : "No");
+    printf("%12s %s\n", "SSE4.2:", sup.SSE4_2 ? "Yes" : "No");
+
+    printf("%12s %s\n", "AVX:", sup.AVX ? "Yes" : "No");
+    printf("%12s %s\n", "AVX2:", sup.AVX2 ? "Yes" : "No");
+    printf("%12s %s\n", "FMA3:", sup.FMA3 ? "Yes" : "No");
+    printf("%12s %s\n", "F16C:", sup.F16C ? "Yes" : "No");
+    printf("%12s %s\n", "BMI1:", sup.BMI1 ? "Yes" : "No");
+    printf("%12s %s\n", "BMI2:", sup.BMI2 ? "Yes" : "No");
+    printf("%12s %s\n", "POPCNT:", sup.POPCNT ? "Yes" : "No");
+    printf("%12s %s\n", "MOVBE:", sup.MOVBE ? "Yes" : "No");
+    printf("%12s %s\n", "ADX:", sup.ADX ? "Yes" : "No");
+    printf("%12s %s\n", "AES-NI:", sup.AES_NI ? "Yes" : "No");
+    printf("%12s %s\n", "PCLMULQDQ:", sup.PCLMULQDQ ? "Yes" : "No");
+    printf("%12s %s\n", "SHA:", sup.SHA ? "Yes" : "No");
+    printf("%12s %s\n", "RDRAND:", sup.RDRAND ? "Yes" : "No");
+
+    printf("%12s %s\n", "AVXVNNI:", sup.AVXVNNI ? "Yes" : "No");
+    printf("%12s %s\n", "AMX:", sup.AMX ? "Yes" : "No");
+
+    printf("%12s %s\n", "AVX512F:", sup.AVX512F ? "Yes" : "No");
+    printf("%12s %s\n", "AVX512DQ:", sup.AVX512DQ ? "Yes" : "No");
+    printf("%12s %s\n", "AVX512CD:", sup.AVX512CD ? "Yes" : "No");
+    printf("%12s %s\n", "AVX512BW:", sup.AVX512BW ? "Yes" : "No");
+    printf("%12s %s\n", "AVX512VL:", sup.AVX512VL ? "Yes" : "No");
+    printf("%12s %s\n", "AVX512VNNI:", sup.AVX512VNNI ? "Yes" : "No");
 
     return 0;
 }
