@@ -8,6 +8,12 @@ CPUID-Explorer is a Windows-based CPU information utility that retrieves process
 
 The project is currently implemented as a console application, with plans to introduce a graphical user interface in the future.
 
+## Sample Output
+
+The following screenshot shows the console output running on the development machine (Intel Core i9-7980XE):
+
+<img width="844" height="1239" alt="image" src="https://github.com/user-attachments/assets/a575e031-fd3d-4088-b4ad-809b2da58785" />
+
 ## Current Features
 
 - CPU Vendor Identification
