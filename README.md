@@ -16,21 +16,13 @@ The following screenshot shows the console output running on the development mac
 
 ## Current Features
 
-- CPU Vendor Identification
-- CPU Brand String
-- Maximum Basic CPUID Function
-- Maximum Extended CPUID Function
+- CPU Vendor and Brand String Identification
 - CPU Family / Model / Stepping
-- Processor Type
-- Cache Enumeration
-- Cache Size Calculation
-- Cache Associativity
-- Cache Inclusiveness
+- Cache and CPU Topology Information
+- Common CPU Instruction Set Detection
 
 ## Planned Features
 
-- CPU Instruction Set Detection
-- CPU Topology Information
 - Extended AMD Cache Detection
 - GUI
 - Real-time CPU Information Dashboard
