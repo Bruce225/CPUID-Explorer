@@ -8,7 +8,7 @@
 int main()
 {
 // Get Basic Info
-    printf("__ Basic Info __:\n");
+    printf("-- Basic Info --:\n\n");
 
     int cpuInfo[4] = {0};
     __cpuid(cpuInfo, 0);
@@ -43,26 +43,6 @@ int main()
     cpuBrand[48] = '\0';
     printf("CPU Brand: %s\n", cpuBrand);
 
-    // Get CPU Cores & Threads (Suitable for Non-hybrid architecture CPUs)
-    __cpuidex(cpuInfo, 0x0B, 0);
-    int numDfLogiProcPerCore = cpuInfo[1] & 0xFFFF;
-    __cpuidex(cpuInfo, 0x0B, 1);
-    int numDfLogiCores = cpuInfo[1] & 0xFFFF;
-
-    int activeThreads = GetActiveProcessorCount(ALL_PROCESSOR_GROUPS);
-
-    unsigned char buffer[4097];
-    DWORD size = sizeof(buffer);
-    GetLogicalProcessorInformationEx(
-        RelationProcessorCore, (PSYSTEM_LOGICAL_PROCESSOR_INFORMATION_EX)buffer, &size);
-    int isSMTActive =
-        ((((PSYSTEM_LOGICAL_PROCESSOR_INFORMATION_EX)buffer)->Processor.Flags) & LTP_PC_SMT) != 0;
-
-    printf("Hyper-Threading: %sSupported, currently %s\n", (numDfLogiProcPerCore > 1) ? "" : "Not ",
-        isSMTActive ? "ON" : "OFF");
-    printf("Active: %d / %d Cores, %d / %d Threads\n", activeThreads / (isSMTActive + 1),
-        numDfLogiCores / numDfLogiProcPerCore, activeThreads ,numDfLogiCores);
-
     // Get CPU Family / Model / Stepping etc.
     // 
     // fn_id 0x01: cpuInfo[0] binary 
@@ -86,9 +66,32 @@ int main()
     printf("Family: %x  Model: %x  Stepping: %x\n", family, model, stepping);
     printf("Extended Family: %x  Extended Model: %x\n", displayFamily, displayModel);
     
-// Get Cache
-    printf("\n__ Cache __:\n");
+// Get CPU Topology. Including Cores/Threads, SMT, Cache.
+    printf("\n-- CPU Topology --:\n\n");
 
+    // Get CPU Cores & Threads (Suitable for Non-hybrid architecture CPUs)
+    __cpuidex(cpuInfo, 0x0B, 0);
+    int numDfLogiProcPerCore = cpuInfo[1] & 0xFFFF;
+    __cpuidex(cpuInfo, 0x0B, 1);
+    int numDfLogiCores = cpuInfo[1] & 0xFFFF;
+
+    int activeThreads = GetActiveProcessorCount(ALL_PROCESSOR_GROUPS);
+
+    unsigned char buffer[4097];
+    DWORD size = sizeof(buffer);
+    GetLogicalProcessorInformationEx(
+        RelationProcessorCore, (PSYSTEM_LOGICAL_PROCESSOR_INFORMATION_EX)buffer, &size);
+    int isSMTActive =
+        ((((PSYSTEM_LOGICAL_PROCESSOR_INFORMATION_EX)buffer)->Processor.Flags) & LTP_PC_SMT) != 0;
+
+    printf("Hyper-Threading: %sSupported, currently %s\n", (numDfLogiProcPerCore > 1) ? "" : "Not ",
+        isSMTActive ? "ON" : "OFF");
+    printf("Active: %d / %d Cores, %d / %d Threads\n", activeThreads / (isSMTActive + 1),
+        numDfLogiCores / numDfLogiProcPerCore, activeThreads, numDfLogiCores);
+
+    printf("\n");
+
+    // Get CPU Cache
     for (int i = 0; i <= 31; i++) 
     {
         __cpuidex(cpuInfo, 0x04, i);
@@ -125,7 +128,7 @@ int main()
 
 
 // Get Instruction Sets Supported
-    printf("__ Supported Instruction Sets__\n");
+    printf("-- Supported Instruction Sets --\n\n");
 
     __cpuidex(cpuInfo, 0x07, 0);
     int ebx07_0 = cpuInfo[1], ecx07_0 = cpuInfo[2], edx07_0 = cpuInfo[3];
